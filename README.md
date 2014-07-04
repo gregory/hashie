@@ -224,6 +224,83 @@ mash.inspect # => <Hashie::Mash>
 
 **Note:** The `?` method will return false if a key has been set to false or nil. In order to check if a key has been set at all, use the `mash.key?('some_key')` method instead.
 
+## Yash
+
+Yash allows you to transform files into Mash objects. This is useful for instance when you'll have to load config files.
+
+### Example:
+```yml
+#/etc/config/settings/database.yml
+development:
+  host: 'localhost'
+  port: 1234
+production:
+  host: <%= ENV['HOST'] %> #let's say that ENV['host'] is set to '1.2.3.4'
+  port: <%= ENV['PORT'] %>
+```
+
+```ruby
+#.file_to_mash will transform a file into Mash:
+config = Yash.file_to_mash('settings/database.yml')
+config.development.host # => 'localhost'
+
+#.load will do the same as file_to_mash and:
+#  - freeze keys so that it'll be readable only
+#  - add some magic for pretty inspect the hash
+config = Yash.load('settings/database.yml')
+config.development.host # => 'localhost'
+config.development.host = "foo" # => <# RuntimeError can't modify frozen ...>
+
+#.[] will cache the results of load(file) into memory
+config = Yash['settings/database.yml']
+config2 = Yash['settings/database.yml']
+config.object_id == config2.object_id
+config.development.host # => 'localhost'
+```
+### The Cool stuffs:
+
+You can set a default folder to where Yash will look for your files.
+This will be useful in case you store your config files in a different folder in production than development
+```ruby
+Yash.file_path('settings/database.yml') # => "./settings/database.yml"
+Yash.default_folder = '/etc/config/'
+Yash.file_path('settings/database.yml') # => "/etc/config/settings/database.yml"
+```
+
+You can set a default namespace for all your files and you'll get a mash with the root set to that namespace.
+```ruby
+Yash.default_namespace = 'production'
+config = Yash.load('settings/database.yml')
+config.development # => nil
+config.host # => '1.2.3.4'
+```
+
+You can extend a Yash to mimic the settings behaviour to another class
+This will define a `settings` method for easier global access in your code to specific configs:
+
+```yml
+#/etc/config/settings/twitter.yml
+production:
+  api_key: <%= ENV['twitter_api_key'] %> #let's say that ENV['twitter_api_key'] is set to 'twitter_foo'
+#/etc/config/settings/facebook.yml
+production:
+  api_key: <%= ENV['facebook_api_key'] %> #let's say that ENV['facebook_api_key'] is set to 'facebook_foo'
+```
+
+```ruby
+Yash.default_namespace = 'production'
+Twitter.extend Yash.new('settings/twitter.yml')
+Facebook.extend Yash.new('settings/facebook.yml')
+Twitter.settings.api_key # => 'twitter_foo'
+Facebook.settings.api_key # =>'facebook_foo'
+```
+
+If you dont like `settings`, you can overwrite it:
+```ruby
+Twitter.extend Yash.new('settings/twitter.yml', settings_method_name: 'config')
+Twitter.config.api_key # => 'twitter_foo'
+```
+
 ## Dash
 
 Dash is an extended Hash that has a discrete set of defined properties and only those properties may be set on the hash. Additionally, you can set defaults for each property. You can also flag a property as required. Required properties will raise an exception if unset.

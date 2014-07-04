@@ -5,6 +5,7 @@ module Hashie
   autoload :Mash,               'hashie/mash'
   autoload :Trash,              'hashie/trash'
   autoload :Rash,               'hashie/rash'
+  autoload :Yash,               'hashie/yash'
 
   module Extensions
     autoload :Coercion,          'hashie/extensions/coercion'
@@ -28,6 +29,10 @@ module Hashie
 
     module Dash
       autoload :IndifferentAccess, 'hashie/extensions/dash/indifferent_access'
+    end
+
+    module Yash
+      autoload :YamlErbParser, 'hashie/extensions/yash/yaml_erb_parser'
     end
   end
 end
