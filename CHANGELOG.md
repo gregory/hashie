@@ -1,5 +1,5 @@
 ## Next
-* [#183](https://github.com/intridea/hashie/pull/183) Added Cash, the ability to load config files - [@gregory](https://github.com/gregory)
+* [#183](https://github.com/intridea/hashie/pull/183) Added Yash, the ability to load config files - [@gregory](https://github.com/gregory)
 * [#179](https://github.com/intridea/hashie/pull/179) Mash#values_at will convert each key before doing the lookup - [@nahiluhmot](https://github.com/nahiluhmot).
 * [#184](https://github.com/intridea/hashie/pull/184) Allow ranges on Rash to match all Numeric types - [@medcat](https://github.com/medcat).
 * Your contribution here.

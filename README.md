@@ -259,22 +259,6 @@ config.development.host # => 'localhost'
 ```
 ### The Cool stuffs:
 
-You can set a default folder to where Yash will look for your files.
-This will be useful in case you store your config files in a different folder in production than development
-```ruby
-Yash.file_path('settings/database.yml') # => "./settings/database.yml"
-Yash.default_folder = '/etc/config/'
-Yash.file_path('settings/database.yml') # => "/etc/config/settings/database.yml"
-```
-
-You can set a default namespace for all your files and you'll get a mash with the root set to that namespace.
-```ruby
-Yash.default_namespace = 'production'
-config = Yash.load('settings/database.yml')
-config.development # => nil
-config.host # => '1.2.3.4'
-```
-
 You can extend a Yash to mimic the settings behaviour to another class
 This will define a `settings` method for easier global access in your code to specific configs:
 
@@ -288,11 +272,10 @@ production:
 ```
 
 ```ruby
-Yash.default_namespace = 'production'
 Twitter.extend Yash.new('settings/twitter.yml')
 Facebook.extend Yash.new('settings/facebook.yml')
-Twitter.settings.api_key # => 'twitter_foo'
-Facebook.settings.api_key # =>'facebook_foo'
+Twitter.settings[ENV['RACK_ENV']].api_key # => 'twitter_foo'
+Facebook.settings.production.api_key # =>'facebook_foo'
 ```
 
 If you dont like `settings`, you can overwrite it:
