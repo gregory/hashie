@@ -156,6 +156,21 @@ describe Hashie::Extensions::Coercion do
         expect(tweet[:user]).to be_a(UserMash)
       end
     end
+    context 'when used with a Trash' do
+      class UserTrash < Hashie::Trash
+      end
+      class TweetTrash < Hashie::Trash
+        include Hashie::Extensions::Coercion
+
+        property :user, from: :user_data
+        coerce_key :user, UserTrash
+      end
+
+      it 'coerces with instance initialization' do
+        tweet = TweetMash.new(user_data: { email: 'foo@bar.com' })
+        expect(tweet[:user]).to be_a(UserMash)
+      end
+    end
   end
 
   describe '#coerce_value' do
