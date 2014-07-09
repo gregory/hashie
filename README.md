@@ -224,64 +224,47 @@ mash.inspect # => <Hashie::Mash>
 
 **Note:** The `?` method will return false if a key has been set to false or nil. In order to check if a key has been set at all, use the `mash.key?('some_key')` method instead.
 
-## Yash
-
-Yash allows you to transform files into Mash objects. This is useful for instance when you'll have to load config files.
+Mash allows you also to transform any files into a Mash objects.
 
 ### Example:
-```yml
-#/etc/config/settings/database.yml
-development:
-  host: 'localhost'
-  port: 1234
-production:
-  host: <%= ENV['HOST'] %> #let's say that ENV['host'] is set to '1.2.3.4'
-  port: <%= ENV['PORT'] %>
-```
-
-```ruby
-#.file_to_mash will transform a file into Mash:
-config = Yash.file_to_mash('settings/database.yml')
-config.development.host # => 'localhost'
-
-#.load will do the same as file_to_mash and:
-#  - freeze keys so that it'll be readable only
-#  - add some magic for pretty inspect the hash
-config = Yash.load('settings/database.yml')
-config.development.host # => 'localhost'
-config.development.host = "foo" # => <# RuntimeError can't modify frozen ...>
-
-#.[] will cache the results of load(file) into memory
-config = Yash['settings/database.yml']
-config2 = Yash['settings/database.yml']
-config.object_id == config2.object_id
-config.development.host # => 'localhost'
-```
-### The Cool stuffs:
-
-You can extend a Yash to mimic the settings behaviour to another class
-This will define a `settings` method for easier global access in your code to specific configs:
 
 ```yml
 #/etc/config/settings/twitter.yml
+development:
+  api_key: 'api_key'
 production:
-  api_key: <%= ENV['twitter_api_key'] %> #let's say that ENV['twitter_api_key'] is set to 'twitter_foo'
-#/etc/config/settings/facebook.yml
-production:
-  api_key: <%= ENV['facebook_api_key'] %> #let's say that ENV['facebook_api_key'] is set to 'facebook_foo'
+  api_key: <%= ENV['API_KEY'] %> #let's say that ENV['API_KEY'] is set to 'abcd'
 ```
 
 ```ruby
-Twitter.extend Yash.new('settings/twitter.yml')
-Facebook.extend Yash.new('settings/facebook.yml')
-Twitter.settings[ENV['RACK_ENV']].api_key # => 'twitter_foo'
-Facebook.settings.production.api_key # =>'facebook_foo'
+mash = Mash.load('settings/twitter.yml')
+mash.development.api_key # => 'localhost'
+mash.development.api_key = "foo" # => <# RuntimeError can't modify frozen ...>
+mash.development.api_key? # => true
 ```
 
-If you dont like `settings`, you can overwrite it:
+You can access a Mash from another class:
+
 ```ruby
-Twitter.extend Yash.new('settings/twitter.yml', settings_method_name: 'config')
-Twitter.config.api_key # => 'twitter_foo'
+mash = Mash.load('settings/twitter.yml')[ENV['RACK_ENV']]
+Twitter.extend mash.to_module # NOTE: if you want another name than settings, call: to_module('my_settings')
+Twitter.settings.api_key # => 'abcd'
+```
+
+You can use another parser (by default: YamlErbParser):
+
+```
+#/etc/data/user.csv
+id | name          | lastname
+---|------------- | -------------
+1  |John          | Doe
+2  |Laurent       | Garnier
+```
+
+```ruby
+mash = Mash.load('data/user.csv', MyCustomCsvParser)
+# => { 1 => { name: 'John', lastname: 'Doe'}, 2 => { name: 'Laurent', lastname: 'Garnier' } }
+mash[1] #=> { name: 'John', lastname: 'Doe' }
 ```
 
 ## Dash

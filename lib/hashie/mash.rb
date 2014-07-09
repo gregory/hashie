@@ -69,7 +69,7 @@ module Hashie
       @_mashes[path]
     end
 
-    def to_module(mash_method_name=:settings)
+    def to_module(mash_method_name = :settings)
       mash = self
       Module.new do |m|
         m.send :define_method, mash_method_name.to_sym do
